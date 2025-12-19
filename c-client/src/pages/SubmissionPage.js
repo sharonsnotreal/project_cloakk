@@ -278,7 +278,7 @@ const SubmissionPage = () => {
      const publicBlob = publicKeyArmored;
      const privateBlob = privateKeyArmored;
      // const messageBlob = encrypted
-     console.log(publicBlob, privateBlob);
+    //  console.log(publicBlob, privateBlob);
      const formData = new FormData();
      formData.append("publicKey", publicBlob);
      formData.append("privateKey", privateBlob); // encrypted armored private key
