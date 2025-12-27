@@ -20,18 +20,6 @@ import AdminDashboard from "./pages/AdminDashboard";
 // `;
 
 function App() {
-  // const [theme, setTheme] = useState("light");
-
-  // const toggleTheme = () => {
-  //   const newTheme = theme === "light" ? "dark" : "light";
-  //   setTheme(newTheme);
-  //   localStorage.setItem("theme", newTheme);
-  // };
-
-  // useEffect(() => {
-  //   const localTheme = localStorage.getItem("theme");
-  //   localTheme && setTheme(localTheme);
-  // }, []);
 
   return (
    <ThemeProvider theme={theme}>
