@@ -155,9 +155,18 @@ const AdminLoginPage = () => {
             
             navigate('/admin/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed.');
-            alert("Authentication Failed: Wrong Credentials");
-            localStorage.clear();
+           if (err.response.status === 401) setError("Invalid username or password.");
+           else if (err.response.status === 403) setError("Access denied: admin required.");
+           else setError("Login failed.");
+
+           alert(
+             `Authentication Failed: ${
+               err.response?.data?.message || "Wrong Credentials"
+             }`
+           );
+           // remove only auth info
+           setError(err.response?.data?.message || "Login failed.");
+           localStorage.removeItem("adminInfo");
         } finally {
             setLoading(false);
         }

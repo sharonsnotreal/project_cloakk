@@ -5,13 +5,12 @@ const cors = require("cors");
 const connectDB = require("./db/config");
 const rateLimit = require("express-rate-limit");
 const path = require("path");
-// const mongoSanitize = require("express-mongo-sanitize");
 const mongoSanitize = require("@exortek/express-mongo-sanitize");
 dotenv.config();
 connectDB();
 
 const app = express();
-// // Basic rate limiting
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -27,7 +26,6 @@ app.use(mongoSanitize());
 app.get("/health", (req, res) => res.status(200).send("OK"));
 // Serve uploaded files
 app.use("/api/submissions", require("./routes/submissionRoutes"));
-// app.use("/uploads", express.static(path.resolve(__dirname, "uploads")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads").replace(/\\/g, "/")));
 app.use("/api/admin", require("./routes/adminRoutes"));
 
@@ -35,8 +33,3 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
-
-
-
-
-

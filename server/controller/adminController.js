@@ -6,47 +6,49 @@ const AuditLog = require("../models/auditlog");
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "8h",
+    expiresIn: "4h",
   });
 };
 
+
+//register admin
 /**
  * @desc    Register a new admin
  * @route   POST /api/admin/register
  * @access  Private (or script-based for initial setup)
  */
 const registerAdmin = asyncHandler(async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body; 
 
-  if (!username || !password) {
+  const exists = await Admin.findOne({ username });
+  if (exists) {
     res.status(400);
-    throw new Error("Please add all fields");
+    throw new Error("Username already exists");
   }
 
-  const adminExists = await Admin.findOne({ username });
-
-  if (adminExists) {
-    res.status(400);
-    throw new Error("Admin already exists");
-  }
-
-  const admin = await Admin.create({
+  const admin = new Admin({
     username,
     password,
+    isAdmin: false,
   });
 
+  await admin.save();
+
+  
   if (admin) {
     res.status(201).json({
-      _id: admin.id,
-      username: admin.username,
-      token: generateToken(admin._id),
-    });
+    _id: admin._id,
+    username: admin.username,
+    isAdmin: admin.isAdmin,
+    token: generateToken(admin._id),
+  });
   } else {
     res.status(400);
     throw new Error("Invalid admin data");
   }
 });
 
+//login admin
 /**
  * @desc    Authenticate an admin
  * @route   POST /api/admin/login
@@ -55,18 +57,25 @@ const registerAdmin = asyncHandler(async (req, res) => {
 const loginAdmin = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
-  const admin = await Admin.findOne({ username });
+  // include password and isAdmin in the returned document
+  const admin = await Admin.findOne({ username }).select("+password +isAdmin");
 
-  if (admin && (await admin.matchPassword(password))) {
-    res.json({
-      _id: admin.id,
-      username: admin.username,
-      token: generateToken(admin._id),
-    });
-  } else {
+  if (!admin || !(await admin.matchPassword(password))) {
     res.status(401);
     throw new Error("Invalid username or password");
   }
+
+  if (!admin.isAdmin) {
+    res.status(403);
+    throw new Error("Forbidden: admin access required");
+  }
+
+  res.json({
+    _id: admin._id,
+    username: admin.username,
+    isAdmin: admin.isAdmin,
+    token: generateToken(admin._id),
+  });
 });
 
 /**

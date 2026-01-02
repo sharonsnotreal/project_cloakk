@@ -41,6 +41,7 @@ const createSubmission = asyncHandler(async (req, res) => {
     publicKey,
     receiptCode: generateReceiptCode(),
   };
+  
   const files = Array.isArray(req.files)
     ? req.files
     : req.file
@@ -59,13 +60,7 @@ const createSubmission = asyncHandler(async (req, res) => {
       fieldname: f.fieldname || null,
     }));
   }
-  // if (req.file) {
-  //   submissionData.file = {
-  //     originalName: req.file.originalname,
-  //     path: req.file.path,
-  //     mimetype: req.file.mimetype,
-  //   };
-  // }
+ 
 
   const submission = await Submission.create(submissionData);
 

@@ -1,24 +1,8 @@
 const multer = require("multer");
 const path = require("path");
-const { fileTypeFromBuffer } = require("file-type");
 const mkdirp = require("mkdirp");
 
-// const storage = multer.memoryStorage();
 
-const allowedMimeTypes = [
-  // Documents
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
-  "text/plain",
-  // Images
-  "image/jpeg",
-  "image/png",
-  // Videos
-  "video/mp4",
-  "video/quicktime", // .mov
-  "video/x-msvideo", // .avi
-];
 const fileDestination = (file) => {
   const mime = file.mimetype;
 
@@ -28,14 +12,7 @@ const fileDestination = (file) => {
 
   return "uploads/others";
 };
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, "uploads/");
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, `${Date.now()}-${file.originalname}`);
-//   },
-// });
+
 const storage = multer.diskStorage({
   destination: async function (req, file, cb) {
     const folder = fileDestination(file);

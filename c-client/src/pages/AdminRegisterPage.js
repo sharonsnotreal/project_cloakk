@@ -154,10 +154,12 @@ const AdminRegisterPage = () => {
 
             const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
             const response = await axios.post(`${apiUrl}/api/admin/register`, { username, password });
-            localStorage.setItem('adminInfo', JSON.stringify(response.data));
-            navigate('/admin/dashboard');
+            // localStorage.setItem('adminInfo', JSON.stringify(response.data));
+            if (response.status === 201){
+                          navigate('/admin/login');}
+            
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed.');
+            setError(err.response?.data?.message || 'Registration failed.');
         } finally {
             setLoading(false);
         }

@@ -1051,16 +1051,7 @@ const AdminDashboard = () => {
                 </HeaderInfo>
 
                 <HeaderActions>
-                  <FiChevronLeft
-                    onClick={() => {
-                      /* TODO: prev navigation */
-                    }}
-                  />
-                  <FiChevronRight
-                    onClick={() => {
-                      /* TODO: next navigation */
-                    }}
-                  />
+                 
 
                   {activeSubmission.isViewed ? (
                     <FiEyeOff

@@ -8,16 +8,7 @@ import SuccessPage from './pages/SuccessPage';
 import AdminRegisterPage from "./pages/AdminRegisterPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
-// import styled from "styled-components";
 
-// const AppContainer = styled.div`
-//   min-height: 100vh;
-//   display: flex;
-//   flex-direction: column;
-//   align-items: center;
-//   justify-content: center;
-//   padding: 2rem;
-// `;
 
 function App() {
 

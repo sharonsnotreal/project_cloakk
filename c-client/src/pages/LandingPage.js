@@ -154,15 +154,15 @@ const LandingPage = () => {
 
         <RightPanel>
           <Description>
-            Cloakk is a secure, anonymous submission platform designed for organizations to receive sensitive tips, reports, or files from insiders — without compromising their identity.
+            Cloakk allows you to report in-house misconduct, raise a concern, or just tell us how you feel
           </Description>
 
           <Description>
-            Whether you’re reporting misconduct, raising a concern, or just speaking up, your submission remains encrypted, protected, and untraceable.
+            Your identity is not required or recorded
           </Description>
 
           <Description style={{ marginBottom: 0 }}>
-            <strong>Your identity is not recorded, stored, or required.</strong>
+            <strong>You are Cloakked</strong>
           </Description>
 
           <CTAWrapper>

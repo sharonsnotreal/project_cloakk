@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { FiAlertTriangle, FiShield, FiFileText, FiX } from 'react-icons/fi';
-
+const passphrase = process.env.REACT_E2E_PASSHPRAHSE
 
 // import Axios from "axios";
-const openpgp = require("openpgp");
+const openpgp = require("openpgp"); //CSE
 // import
 const PageContainer = styled.div`
   display: flex;
@@ -319,7 +319,7 @@ const SubmissionPage = () => {
               </p>
               <p>
                 Abuse of this system for malicious, harmful, or defamatory
-                purposes is strictly discouraged...
+                purposes is strictly discouraged.
               </p>
             </div>
           </DisclaimerItem>
