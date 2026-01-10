@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   createSubmission,
   getAllSubmissions,
+  updateSubmission,
   deleteSubmission,
   getDeletedSubmissions,
   restoreSubmission,
@@ -27,4 +28,5 @@ router.get("/", protect, getAllSubmissions);
 router.get("/bin", protect, getDeletedSubmissions);
 router.delete("/:id", protect, deleteSubmission);
 router.patch("/:id/restore", protect, restoreSubmission);
+router.put("/:id", protect, updateSubmission);
 module.exports = router;

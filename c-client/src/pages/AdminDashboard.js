@@ -15,8 +15,6 @@ import {
   FiInbox,
   FiTrash2,
   FiLogOut,
-  FiChevronLeft,
-  FiChevronRight,
   FiSearch,
   FiDownload,
   FiCheckCircle,
@@ -601,7 +599,8 @@ const AdminDashboard = () => {
         : null;
 
       // TODO: replace with secure retrieval of passphrase
-      const PASS = "super long and hard to guess secret"; // <-- REPLACE in prod
+      const PASS = process.env.REACT_APP_PASSPHRASE; // <-- REPLACE in prod
+      console.log(PASS)
 
       const unlockedPriv = await openpgp.decryptKey({
         privateKey: privKeyObj,

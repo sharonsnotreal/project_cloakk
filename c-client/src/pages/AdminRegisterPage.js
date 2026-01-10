@@ -179,7 +179,7 @@ const AdminRegisterPage = () => {
                 </FormPanel>
                 <LogoPanel>
                     {/* <AppName>Cloakk</AppName> */}
-                    <LogoImage src="/cloakk.png" />
+                    <LogoImage src="/cloakkavatar.png" />
                 </LogoPanel>
             </LoginContainer>
         </PageContainer>

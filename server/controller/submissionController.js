@@ -31,7 +31,7 @@ const createSubmission = asyncHandler(async (req, res) => {
   if (!textMessage) {
     res.status(400);
     throw new Error("Text message is required");
-  }
+}
   // Sanitize input to prevent XSS
   // const sanitizedTextMessage = xss(textMessage);
 

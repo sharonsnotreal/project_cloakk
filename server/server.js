@@ -10,14 +10,53 @@ dotenv.config();
 connectDB();
 
 const app = express();
-// Rate limiting
+// General rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 100,
 });
+
+// Login-specific rate limiter
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // allow 5 login attempts per IP in this window
+  handler: (req, res) => {
+    res.status(429).json({
+      status: "error",
+      message: "Too many login attempts from this IP. Please try again after 15 minutes."
+    });
+  },
+});
+
 app.use(limiter);
-app.use(helmet());
-app.use(cors());
+// app.use(helmet());
+app.use(
+  helmet({
+    xFrameOptions: { action: "deny" },
+    contentSecurityPolicy: {
+      directives: {
+        "frame-ancestors": ["'none'"],
+      },
+    },
+  })
+);
+const allowedOrigins = [
+  'https://project-cloakk-1.onrender.com', 
+  'https://your-frontend-app.com',         
+  'http://localhost:3000']
+  const corsOptions = {
+  origin: function (origin, callback) {
+
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 // using mongo-sanitize middlware to prevent NoSQL Injection

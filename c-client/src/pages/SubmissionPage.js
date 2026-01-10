@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { FiAlertTriangle, FiShield, FiFileText, FiX } from 'react-icons/fi';
-const passphrase = process.env.REACT_E2E_PASSHPRAHSE
+import { useEffect } from "react";
 
 // import Axios from "axios";
 const openpgp = require("openpgp"); //CSE
@@ -180,6 +180,13 @@ const SubmissionPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+useEffect(() => {
+  const hasAccess = sessionStorage.getItem("cloakk_access_granted");
+  if (!hasAccess) {
+    navigate("/");
+  }
+}, [navigate]);
+
   const inputRef = useRef(null);
 
   const ALLOWED_TYPES = [
@@ -264,7 +271,7 @@ const SubmissionPage = () => {
          type: "ecc",
          curve: "curve25519",
          userIDs: [{ name: "cloakk-user", email: "cloakk-user@example.com" }],
-         passphrase: "super long and hard to guess secret",
+         passphrase: process.env.REACT_APP_PASSPHRASE,
          format: "armored",
        });
 
@@ -304,6 +311,14 @@ const SubmissionPage = () => {
    }
  };
 
+ //for access code
+  useEffect(() => {
+    const hasAccess = sessionStorage.getItem("cloakk_access_granted");
+    if (!hasAccess) {
+      navigate("/");
+    }
+  }, [navigate]);
+//for access code
   return (
     <PageContainer>
       <MainCard initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -407,6 +422,7 @@ const SubmissionPage = () => {
             placeholder="Write message..."
             value={textMessage}
             onChange={(e) => setTextMessage(e.target.value)}
+            maxLength={3000}
           />
 
           {error && <ErrorMessage>{error}</ErrorMessage>}

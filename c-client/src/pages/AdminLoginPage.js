@@ -143,34 +143,49 @@ const AdminLoginPage = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
-        try {
-            const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-            const response = await axios.post(`${apiUrl}/api/admin/login`, { username, password });
-            localStorage.setItem('adminInfo', JSON.stringify(response.data));
-            
-            navigate('/admin/dashboard');
-        } catch (err) {
-           if (err.response.status === 401) setError("Invalid username or password.");
-           else if (err.response.status === 403) setError("Access denied: admin required.");
-           else setError("Login failed.");
+  try {
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    const response = await axios.post(`${apiUrl}/api/admin/login`, { username, password });
+    localStorage.setItem('adminInfo', JSON.stringify(response.data));
 
-           alert(
-             `Authentication Failed: ${
-               err.response?.data?.message || "Wrong Credentials"
-             }`
-           );
-           // remove only auth info
-           setError(err.response?.data?.message || "Login failed.");
-           localStorage.removeItem("adminInfo");
-        } finally {
-            setLoading(false);
-        }
-    };
+    navigate('/admin/dashboard');
+  } catch (err) {
+    if (err.response) {
+      // Rate limiting
+      if (err.response.status === 429) {
+        setError(
+          err.response.data?.message ||
+            "Too many login attempts. Try again in 15 minutes."
+        );
+      }
+      // Invalid credentials
+      else if (err.response.status === 401) {
+        setError("Invalid username or password.");
+      }
+      // Not an admin
+      else if (err.response.status === 403) {
+        setError("Access denied: admin required.");
+      }
+      // Other server errors
+      else {
+        setError(err.response.data?.message || "Login failed.");
+      }
+    } else {
+      // Network or unexpected errors
+      setError("Network error. Please try again.");
+    }
+
+    // Remove invalid auth info
+    localStorage.removeItem("adminInfo");
+  } finally {
+    setLoading(false);
+  }
+};
 
     return (
         <PageContainer>
@@ -186,7 +201,7 @@ const AdminLoginPage = () => {
                 </FormPanel>
                 <LogoPanel>
                     {/* <AppName></AppName> */}
-                    <LogoImage src="/cloakk.png" />
+                    <LogoImage src="/cloakkavatar.png" />
                 </LogoPanel>
             </LoginContainer>
         </PageContainer>

@@ -1,7 +1,9 @@
-import React from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+//for access code
+import React, { useState } from 'react';
+import AccessCodeModal from '../components/AccessCodeModal';
 
 const PageContainer = styled.div`
   display: flex;
@@ -62,7 +64,7 @@ const AppName = styled.h1`
   position: absolute;
   bottom: clamp(1rem, 2.2vw, 2.5rem);
   left: clamp(1rem, 2.5vw, 2.5rem);
-  color: white;
+  color: black;
   font-size: clamp(1.1rem, 2.6vw, 2rem);
   font-weight: 700;
   margin: 0;
@@ -138,8 +140,10 @@ const CTAWrapper = styled.div`
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);//for access code
 
   return (
+    <>
     <PageContainer>
       <MainCard
         initial={{ opacity: 0, y: -20 }}
@@ -148,7 +152,7 @@ const LandingPage = () => {
         aria-label="Cloakk landing"
       >
         <LeftPanel>
-          <LogoImage src="/cloakk.png" alt="Cloakk Logo" />
+          <LogoImage src="/cloakkavatar.png" alt="Cloakk Logo" />
           <AppName>Cloakk</AppName>
         </LeftPanel>
 
@@ -166,13 +170,21 @@ const LandingPage = () => {
           </Description>
 
           <CTAWrapper>
-            <ActionButton onClick={() => navigate('/submit')} aria-label="Make a submission">
+            <ActionButton onClick={() => setShowModal(true)} aria-label="Make a submission">
               Make a submission
             </ActionButton>
           </CTAWrapper>
         </RightPanel>
       </MainCard>
     </PageContainer>
+
+    {showModal && (
+      <AccessCodeModal
+        onClose={() => setShowModal(false)}
+        onSuccess={() => navigate('/submit')}
+      />
+    )}
+  </>
   );
 };
 
