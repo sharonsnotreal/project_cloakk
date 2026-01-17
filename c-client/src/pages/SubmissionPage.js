@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
+import imageCompression from "browser-image-compression";
 import { FiAlertTriangle, FiShield, FiFileText, FiX } from 'react-icons/fi';
 import { useEffect } from "react";
 
