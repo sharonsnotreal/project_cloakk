@@ -175,58 +175,54 @@ const ErrorMessage = styled.p`
 
 const SubmissionPage = () => {
   const [textMessage, setTextMessage] = useState("");
-  const [files, setFiles] = useState([]); // array of File objects
+  const [files, setFiles] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-useEffect(() => {
-  const hasAccess = sessionStorage.getItem("cloakk_access_granted");
-  if (!hasAccess) {
-    navigate("/");
-  }
-}, [navigate]);
+  const isMobile =
+    /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(
+      navigator.userAgent
+    );
 
-  const inputRef = useRef(null);
-
-  const ALLOWED_TYPES = [
-    "application/pdf",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // docx
-    "image/jpeg",
-    "image/png",
-    "video/mp4",
-  ];
-  const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB per file
   const MAX_FILES = 5;
+  const MAX_FILE_SIZE = 25 * 1024 * 1024;
+  const allowedExtensions = ["pdf", "docx", "jpg", "jpeg", "png", "mp4"];
 
-  
-  const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    addFiles(selectedFiles);
-    e.target.value = null;
+  const getExtension = (name) =>
+    name.split(".").pop().toLowerCase();
+
+  const compressImageIfNeeded = async (file) => {
+    if (!file.type.startsWith("image/")) return file;
+
+    return await imageCompression(file, {
+      maxSizeMB: 1.5,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+    });
   };
 
-  const addFiles = (selectedFiles) => {
-    if (!selectedFiles.length) return;
-
-    // Filter and validate files
+  const addFiles = async (selectedFiles) => {
     const validated = [];
-    for (const f of selectedFiles) {
+
+    for (const file of selectedFiles) {
       if (files.length + validated.length >= MAX_FILES) {
         setError(`Maximum of ${MAX_FILES} files allowed.`);
         break;
       }
-      if (!ALLOWED_TYPES.includes(f.type)) {
-        setError(`File type not allowed: ${f.name}`);
+
+      if (!allowedExtensions.includes(getExtension(file.name))) {
+        setError(`File type not allowed: ${file.name}`);
         continue;
       }
-      if (f.size > MAX_FILE_SIZE) {
-        setError(
-          `File too large: ${f.name} (max ${MAX_FILE_SIZE / (1024 * 1024)}MB)`
-        );
+
+      if (file.size > MAX_FILE_SIZE) {
+        setError(`File too large: ${file.name}`);
         continue;
       }
-      validated.push(f);
+
+      const processedFile = await compressImageIfNeeded(file);
+      validated.push(processedFile);
     }
 
     if (validated.length) {
@@ -235,204 +231,118 @@ useEffect(() => {
     }
   };
 
-  const removeFile = (index) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+  const handleFileChange = async (e) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    await addFiles(selectedFiles);
+    e.target.value = null;
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
+    if (isMobile) return;
     e.preventDefault();
-    e.stopPropagation();
-    const dtFiles = Array.from(e.dataTransfer.files || []);
-    addFiles(dtFiles);
+    const droppedFiles = Array.from(e.dataTransfer.files || []);
+    await addFiles(droppedFiles);
   };
 
   const handleDragOver = (e) => {
+    if (isMobile) return;
     e.preventDefault();
-    e.stopPropagation();
   };
 
-  const openFileDialog = () => {
-    inputRef.current?.click();
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
- const handleSubmit = async (e) => {
-   e.preventDefault();
-   if (!textMessage) {
-     setError("A text message is required.");
-     return;
-   }
-   setLoading(true);
-   setError("");
-
-   try {
-     // generate armored keys (privateKey is already armored & encrypted by passphrase)
-     const { privateKey: privateKeyArmored, publicKey: publicKeyArmored } =
-       await openpgp.generateKey({
-         type: "ecc",
-         curve: "curve25519",
-         userIDs: [{ name: "cloakk-user", email: "cloakk-user@example.com" }],
-         passphrase: process.env.REACT_APP_PASSPHRASE,
-         format: "armored",
-       });
-
-     // encrypt the message with the public key
-     const pubKey = await openpgp.readKey({ armoredKey: publicKeyArmored });
-     const encrypted = await openpgp.encrypt({
-       message: await openpgp.createMessage({ text: textMessage }),
-       encryptionKeys: pubKey,
-     });
-
-     const publicBlob = publicKeyArmored;
-     const privateBlob = privateKeyArmored;
-     // const messageBlob = encrypted
-    //  console.log(publicBlob, privateBlob);
-     const formData = new FormData();
-     formData.append("publicKey", publicBlob);
-     formData.append("privateKey", privateBlob); // encrypted armored private key
-     formData.append("textMessage", encrypted);
-     if(files){
-        files.forEach((file) => {
-          formData.append("files", file);
-        });
-     }
-     // POST to server to store files
-     const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-     const response = await axios.post(`${apiUrl}/api/submissions`, formData, {
-       headers: { "Content-Type": "multipart/form-data" },
-     });
-     
-     navigate("/success", { state: { receipt: response.data.receiptCode } });
-   } catch (err) {
-     setError(
-       err.response?.data?.message || err.message || "Submission failed."
-     );
-   } finally {
-     setLoading(false);
-   }
- };
-
- //for access code
-  useEffect(() => {
-    const hasAccess = sessionStorage.getItem("cloakk_access_granted");
-    if (!hasAccess) {
-      navigate("/");
+    if (!textMessage) {
+      setError("A text message is required.");
+      return;
     }
-  }, [navigate]);
-//for access code
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const { privateKey, publicKey } = await openpgp.generateKey({
+        type: "ecc",
+        curve: "curve25519",
+        userIDs: [{ name: "cloakk-user" }],
+        passphrase: "super long and hard to guess secret",
+      });
+
+      const pubKey = await openpgp.readKey({ armoredKey: publicKey });
+      const encrypted = await openpgp.encrypt({
+        message: await openpgp.createMessage({ text: textMessage }),
+        encryptionKeys: pubKey,
+      });
+
+      const formData = new FormData();
+      formData.append("publicKey", publicKey);
+      formData.append("privateKey", privateKey);
+      formData.append("textMessage", encrypted);
+
+      files.forEach((file) => formData.append("files", file));
+
+      const apiUrl =
+        process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+      const response = await axios.post(
+        `${apiUrl}/api/submissions`,
+        formData
+      );
+
+      navigate("/success", {
+        state: { receipt: response.data.receiptCode },
+      });
+    } catch (err) {
+      setError(
+        err.response?.data?.message || err.message || "Submission failed."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <PageContainer>
-      <MainCard initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <DisclaimerPanel>
-          <DisclaimerItem>
-            <FiAlertTriangle style={{ color: "#F59E0B" }} />
-            <div>
-              <strong>Disclaimer</strong>
-              <p>
-                Cloakk is a tool designed for honesty and accountability. By
-                using this platform, you agree to submit truthful, accurate, and
-                respectful content.
-              </p>
-              <p>
-                Abuse of this system for malicious, harmful, or defamatory
-                purposes is strictly discouraged.
-              </p>
-            </div>
-          </DisclaimerItem>
-          <DisclaimerItem>
-            <FiShield style={{ color: "#10B981" }} />
-            <div>
-              Your submission will remain confidential, encrypted, and unlinked
-              to your identity.
-            </div>
-          </DisclaimerItem>
-          <DisclaimerItem>
-            <FiFileText />
-            <div>Supported file types: PDF, DOCX, JPG, PNG, MP4</div>
-          </DisclaimerItem>
-        </DisclaimerPanel>
+    <FormPanel as="form" onSubmit={handleSubmit}>
+      <Title>Submit Anonymously</Title>
 
-        <FormPanel as="form" onSubmit={handleSubmit}>
-          <Title>Submit Anonymously</Title>
+      {/* MOBILE + DESKTOP SAFE FILE PICKER */}
+      <label htmlFor="fileInput" style={{ width: "100%" }}>
+        <DragDropArea
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          role="button"
+          tabIndex={0}
+        >
+          {files.length === 0
+            ? isMobile
+              ? "Tap to upload (camera supported)"
+              : "Drag & drop or click to upload"
+            : `${files.length} file(s) selected`}
+        </DragDropArea>
+      </label>
 
-          <DragDropArea
-            onClick={openFileDialog}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            role="button"
-            tabIndex={0}
-            aria-label="Upload files"
-          >
-            {files.length === 0 ? (
-              "drag and drop or click to upload"
-            ) : (
-              <div style={{ width: "100%" }}>
-                <strong>
-                  {files.length} file{files.length > 1 ? "s" : ""} selected
-                </strong>
-                <ul style={{ margin: "8px 0", paddingLeft: 16 }}>
-                  {files.map((f, i) => (
-                    <li
-                      key={`${f.name}-${i}`}
-                      style={{ display: "flex", alignItems: "center", gap: 8 }}
-                    >
-                      <span
-                        style={{
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          maxWidth: 260,
-                        }}
-                      >
-                        {f.name}
-                      </span>
-                      <small style={{ color: "#6b7280" }}>
-                        {(f.size / 1024 / 1024).toFixed(2)} MB
-                      </small>
-                      <button
-                        type="button"
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          removeFile(i);
-                        }}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          cursor: "pointer",
-                          color: "#ef4444",
-                        }}
-                        aria-label={`Remove ${f.name}`}
-                      >
-                        <FiX />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <input
-              ref={inputRef}
-              type="file"
-              hidden
-              multiple
-              onChange={handleFileChange}
-              accept=".pdf,.docx,.jpg,.jpeg,.png,.mp4"
-            />
-          </DragDropArea>
+      <input
+        id="fileInput"
+        type="file"
+        multiple
+        hidden
+        accept="image/*,video/mp4,.pdf,.docx"
+        capture={isMobile ? "environment" : undefined}
+        onChange={handleFileChange}
+      />
 
-          <MessageInput
-            placeholder="Write message..."
-            value={textMessage}
-            onChange={(e) => setTextMessage(e.target.value)}
-            maxLength={3000}
-          />
+      <MessageInput
+        placeholder="Write message..."
+        value={textMessage}
+        onChange={(e) => setTextMessage(e.target.value)}
+      />
 
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+      {error && <ErrorMessage>{error}</ErrorMessage>}
 
-          <SubmitButton type="submit" disabled={loading}>
-            {loading ? "Submitting..." : "Submit"}
-          </SubmitButton>
-        </FormPanel>
-      </MainCard>
-    </PageContainer>
+      <SubmitButton type="submit" disabled={loading}>
+        {loading ? "Submitting..." : "Submit"}
+      </SubmitButton>
+    </FormPanel>
   );
 };
 
