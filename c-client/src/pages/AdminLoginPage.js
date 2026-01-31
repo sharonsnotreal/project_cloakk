@@ -192,9 +192,9 @@ const AdminLoginPage = () => {
             <LoginContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <FormPanel as="form" onSubmit={handleSubmit}>
                     <label>Username</label>
-                    <Input type="text" value={username} onChange={e => setUsername(e.target.value)} />
+                    <Input type="text" value={username} onChange={e => setUsername(e.target.value)} maxLength={50} required />
                     <label>Password</label>
-                    <Input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+                    <Input type="password" value={password} onChange={e => setPassword(e.target.value)} maxLength={128} required />
                     <LoginButton type="submit" disabled={loading}>Login Admin</LoginButton>
                     <RegisterText onClick={() => navigate("/admin/register")}>Register</RegisterText>
                     {error && <ErrorMessage>{error}</ErrorMessage>}

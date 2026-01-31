@@ -20,6 +20,17 @@ const generateToken = (id) => {
 const registerAdmin = asyncHandler(async (req, res) => {
   const { username, password } = req.body; 
 
+  // Input validation
+  if (!username || username.length > 50) {
+    res.status(400);
+    throw new Error("Username must be 50 characters or fewer");
+  }
+
+  if (!password || password.length > 128) {
+    res.status(400);
+    throw new Error("Password must be 128 characters or fewer");
+  }
+
   const exists = await Admin.findOne({ username });
   if (exists) {
     res.status(400);
@@ -56,6 +67,17 @@ const registerAdmin = asyncHandler(async (req, res) => {
  */
 const loginAdmin = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
+
+  // Input validation
+  if (!username || username.length > 50) {
+    res.status(400);
+    throw new Error("Invalid username or password");
+  }
+
+  if (!password || password.length > 128) {
+    res.status(400);
+    throw new Error("Invalid username or password");
+  }
 
   // include password and isAdmin in the returned document
   const admin = await Admin.findOne({ username }).select("+password +isAdmin");
