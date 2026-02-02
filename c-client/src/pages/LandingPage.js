@@ -158,7 +158,7 @@ const LandingPage = () => {
 
         <RightPanel>
           <Description>
-            Cloakk allows you to report in-house misconduct, raise a concern, or just tell us how you feel
+            Cloakk allows you to report internal threats, misconduct, or sensitive concerns that may impact the organisation
           </Description>
 
           <Description>
