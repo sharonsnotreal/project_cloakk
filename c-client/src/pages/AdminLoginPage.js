@@ -70,6 +70,21 @@ const LogoPanel = styled.div`
   }
 `;
 
+const AppName = styled.h1`
+  color: black;
+  font-size: clamp(1.1rem, 2.6vw, 2rem);
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 4px 18px rgba(0,0,0,0.18);
+  pointer-events: none;
+
+  @media (max-width: 420px) {
+    position: static;
+    margin-top: 0.75rem;
+    text-align: center;
+  }
+`;
+
 const Input = styled.input`
   width: 100%;
   background: ${({ theme }) => theme.white};
@@ -196,12 +211,13 @@ const AdminLoginPage = () => {
                     <label>Password</label>
                     <Input type="password" value={password} onChange={e => setPassword(e.target.value)} maxLength={128} required />
                     <LoginButton type="submit" disabled={loading}>Login Admin</LoginButton>
-                    <RegisterText onClick={() => navigate("/admin/register")}>Register</RegisterText>
+                    {/* <RegisterText onClick={() => navigate("/admin/register")}>Register</RegisterText> */}
                     {error && <ErrorMessage>{error}</ErrorMessage>}
                 </FormPanel>
                 <LogoPanel>
-                    {/* <AppName></AppName> */}
+                  <AppName>Cloakk</AppName>
                     <LogoImage src="/cloakkavatar.png" />
+                    
                 </LogoPanel>
             </LoginContainer>
         </PageContainer>
